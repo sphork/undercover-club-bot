@@ -4,6 +4,7 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
 
 from bot.keyboards.main_menu import build_main_menu
+from bot.lobby.manager import lobbies
 
 router = Router()
 
@@ -40,13 +41,19 @@ async def process_help(callback_query: CallbackQuery):
 
 @router.callback_query(F.data == 'join_game')
 async def process_join_game(callback_query: CallbackQuery):
-    await callback_query.message.answer('Вы присоединились к лобби! Ожидайте начала игры.')
+    lobby = lobbies.get(callback_query.message.chat.id)
+    if not lobby:
+        await callback_query.message.answer('Сначала создайте лобби.')
+    else:
+        ok, msg = lobby.add(callback_query.from_user.id)
+        await callback_query.message.answer(f'{msg}\n\n{lobbies.list_players(callback_query.message.chat.id)}')
     await callback_query.answer()
 
 
 @router.callback_query(F.data == 'create_game')
 async def process_create_game(callback_query: CallbackQuery):
-    await callback_query.message.answer('Создана новая игра! Ждём игроков...')
+    ok, msg = lobbies.create(chat_id=callback_query.message.chat.id, owner_id=callback_query.from_user.id)
+    await callback_query.message.answer(f'{msg}\n\n{lobbies.list_players(callback_query.message.chat.id)}')
     await callback_query.answer()
 
 
@@ -54,6 +61,24 @@ async def process_create_game(callback_query: CallbackQuery):
 async def process_balance(callback_query: CallbackQuery):
     await callback_query.message.answer('Ваш баланс: 0 монет (функция в разработке)')
     await callback_query.answer()
+
+
+# ======== Lobby commands ========
+@router.message(Command('lobby'))
+async def cmd_lobby(message: Message):
+    await message.answer(lobbies.list_players(message.chat.id))
+
+
+@router.message(Command('cancel'))
+async def cmd_cancel(message: Message):
+    ok, msg = lobbies.cancel(chat_id=message.chat.id, by_user=message.from_user.id)
+    await message.answer(msg)
+
+
+@router.message(Command('start'))
+async def cmd_start_game(message: Message):
+    ok, msg = lobbies.start(chat_id=message.chat.id, by_user=message.from_user.id)
+    await message.answer(msg)
 
 
 # ======== Tasks checklist (simple demo) ========

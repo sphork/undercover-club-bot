@@ -10,3 +10,5 @@ Format: Keep a Changelog, date in YYYY-MM-DD.
 - Main menu and demo checklist (tasks 1/2/3) with inline buttons.
 - Project structure (bot/handlers, bot/keyboards), main.py entrypoint.
 - Repo setup: .gitignore, requirements.txt, .env.example, README.
+ - Lobby (create/join/list/start/cancel) — in-memory manager.
+ - File logging, /health, graceful shutdown.
