@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 from aiogram import Bot, Dispatcher
+from aiogram.exceptions import TelegramNetworkError
 from dotenv import load_dotenv
 
 
@@ -23,7 +24,23 @@ async def main():
     from bot.handlers.base import router as base_router
     dp.include_router(base_router)
 
-    await dp.start_polling(bot)
+    while True:
+        try:
+            logging.info("Start polling")
+            await dp.start_polling(bot)
+        except TelegramNetworkError as e:
+            logging.error(f"Polling error: {e}")
+            await asyncio.sleep(2)
+            continue
+        except asyncio.CancelledError:
+            logging.info("Polling cancelled")
+            break
+        except Exception as e:
+            logging.exception("Unexpected error in polling")
+            await asyncio.sleep(3)
+            continue
+        else:
+            break
 
 
 if __name__ == '__main__':
