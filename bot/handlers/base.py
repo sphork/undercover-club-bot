@@ -1,6 +1,6 @@
 from typing import Dict, List
 from aiogram import Router, F
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
 
 from bot.keyboards.main_menu import build_main_menu
@@ -11,6 +11,11 @@ router = Router()
 @router.message(CommandStart())
 async def cmd_start(message: Message):
     await message.answer('Добро пожаловать в Undercover Club!\nВыберите действие:', reply_markup=build_main_menu())
+
+
+@router.message(Command("health"))
+async def cmd_health(message: Message):
+    await message.answer('OK')
 
 
 @router.callback_query(F.data == 'help')
