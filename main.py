@@ -41,8 +41,15 @@ async def main():
     bot = Bot(token=token)
     dp = Dispatcher()
 
-    from bot.handlers.base import router as base_router
-    dp.include_router(base_router)
+    # Dynamic router holder for hot-reload
+    from bot.dev_reload import DynamicRouterHolder
+    holder = DynamicRouterHolder()
+    holder.attach_fresh()
+    dp.include_router(holder.root)
+
+    # Admin router with /reload command
+    from bot.handlers.admin import get_admin_router
+    dp.include_router(get_admin_router(holder))
     try:
         while True:
             try:
